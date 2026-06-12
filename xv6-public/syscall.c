@@ -14,7 +14,7 @@
 // to a saved program counter, and then the first argument.
 
 // Fetch the int at addr from the current process.
-
+extern int syscall_count[]; //size 24 defined in sysfile.c
 int
 fetchint(uint addr, int *ip)
 {
@@ -105,6 +105,7 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_getreadcount(void);
+extern int sys_getsyscallcount(void);//should return void since syscall arguments does not work as function parameter
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -129,6 +130,7 @@ static int (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_getreadcount] sys_getreadcount,
+[SYS_getsyscallcount] sys_getsyscallcount,
 };
 
 void
@@ -140,6 +142,7 @@ syscall(void)
   num = curproc->tf->eax;
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     curproc->tf->eax = syscalls[num]();
+    syscall_count[num]++;
   } else {
     cprintf("%d %s: unknown sys call %d\n",
             curproc->pid, curproc->name, num);

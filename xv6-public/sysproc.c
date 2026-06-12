@@ -8,6 +8,7 @@
 #include "proc.h"
 
 extern int readcount; // global variable  in sysfile.c for accumulating read() syscall count
+extern int syscall_count[]; //global table in sysfile.c to track number of calls made to a system call
 int
 sys_fork(void)
 {
@@ -94,5 +95,24 @@ sys_uptime(void)
 int
 sys_getreadcount(void)
 {
- return readcount;
+ int reset;
+ argint(0, &reset);
+ int current_count = readcount;
+ if(reset == 1)
+  readcount = 0;
+ return current_count;
+}
+
+int
+sys_getsyscallcount(void)
+{
+ int sys_call_num;
+ int reset;
+ argint(0,&sys_call_num);
+ argint(1,&reset);
+ int current_count = syscall_count[sys_call_num];
+ if(reset == 1)
+  syscall_count[sys_call_num] = 0;
+
+ return current_count;
 }

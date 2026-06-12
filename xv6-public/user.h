@@ -23,7 +23,8 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-int getreadcount(void);
+int getreadcount(int reset); //reset =>1 to reset counter
+int getsyscallcount(int sys_call_num, int reset);//Check syscall.c for sys_call_num, reset => 1 to reset counter
 
 // ulib.c
 int stat(const char*, struct stat*);

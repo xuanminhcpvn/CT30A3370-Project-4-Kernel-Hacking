@@ -17,6 +17,7 @@
 #include "fcntl.h"
 
 int readcount = 0; //Global variable to count number of read() syscall.
+int syscall_count[24]; //Global table to keep track of each syscall
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
 static int
