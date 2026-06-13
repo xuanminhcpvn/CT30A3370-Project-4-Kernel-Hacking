@@ -65,14 +65,18 @@ return readcount;
 6.	
 
 And so on but repeating step 1-6 for additional features, for example: 
+
 in user.h updated sys call interface
+
 int getreadcount(int reset)
+
 int getsyscallcount(int sys_call_num, int reset)	
-in usys.S added new SYSCALL name
-SYSCALL(getsyscallcount)
-In sysproc.c reset logic is implemented + syscall counter procedure
-Extern int syscall_count[]
-etc...
+
+in usys.S added new SYSCALL name SYSCALL(getsyscallcount)
+
+in sysproc.c reset logic is implemented + syscall counter procedure Extern int syscall_count[] etc...
+
+## Other additional notes
 There are some minor modifications related to the xv6 set-up suggestion by the course book such as set CPU:=1 and something else related to the qemu emulator not creating a new window in Makefile
 Also an important one is to add my own program to Makefile User program build instruction
 U_PROGS:= read_count_test\
