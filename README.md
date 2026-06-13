@@ -1,84 +1,145 @@
+### Declaration of AI (AI was used to turn my notes during development phase) to .md format. Tool used: ChatGPT
 # CT30A3370-Project-4-Kernel-Hacking
 ## Introduction
-```bash
-   * This project create two new system calls that track and return the number of system calls made: **getreadcount(int reset)** and **getsyscallcount(int sys_call_number, int reset)**
-   * **getreadcount(int reset)** only track read() system call and getsyscallcount track specified system call identified by sys_call_number parameter. Both system call takes in int reset parameter to check if user want to reset the counter.
- ```
-## Installation instruction
-```bash
-Requirement
-   * Best run this in Linux terminal (all commands here only works on Linux subsystems)
-   * vscode will not be able to build qemu emulator since it use snap while qemu ...
- ```
+
+This project implements two new system calls in the xv6 operating system that track and return the number of system calls:
+
+* **getreadcount(int reset)**
+* **getsyscallcount(int syscall_number, int reset)**
+
+The **getreadcount()** system call tracks only `read()` system calls. The **getsyscallcount()** system call tracks any system call specified by the `syscall_number` parameter.
+
+Both system calls support a reset flag. When `reset = 1`, the current counter value is returned and the corresponding counter is reset to zero. When `reset = 0`, the current value is returned without modifying the counter.
+
+## Installation Instructions
+
+### Requirements
+
+* Ubuntu 22.04 or similar Linux environment.
+* Must use a Linux terminal instead of VS Code Snap Terminal because Snap may cause QEMU library conflicts.
+* Required packages (to be fair only qemu-system-x86 is the critical one to enable qemu-emulator):
 
 ```bash
-## Preinstallation:
-git clone https://github.com/xuanminhcpvn/CT30A3370-Project-4-Kernel-Hacking
-sudo apt install qemu-system-x86  //You might need to install qemu-emulator to test system call using a program that test features of new system calls
-
-## To run program (or in fact test created system calls):
-git clone https://github.com/xuanminhcpvn/CT30A3370-Project-1-Warmup-to-C-and-Unix-programming
-cd xv6-public
-make clean #(just to reset the build process and make sure that latest version is being build, can skip this)
-make  
-make qemu
-=> You will see a terminal like this
-=> type following command to run the test program if you want to quickly check that counters works:
-read_count_test (this will run a custom user program)
+sudo apt install build-essential
+sudo apt install qemu-system-x86
+sudo apt install gcc-multilib
+sudo apt install libc6-dev-i386
 ```
-## Details about the workflow and what I modified
-Since we have small code addition in different files. I will document all changes/additions made to enable new system call creation
+```bash
+git clone https://github.com/xuanminhcpvn/CT30A3370-Project-4-Kernel-Hacking.git
+cd CT30A3370-Project-4-Kernel-Hacking/xv6-public
+make clean
+make
+make qemu
+```
+### Run Test Program when qemu terminal is available (otherwise check if qemu-package is installed or you are not using vscode terminal ):
 
-1.	In usys.S added:
+```bash
+read_count_test
+```
+This program test:
+* getreadcount()
+* getreadcount() reset functionality
+* getsyscallcount() for read()
+* getsyscallcount() for write()
+* reset functionality for selected system call counters (write which is not really easy to track since there is a lot of write() call by other kernel routine
+
+---
+
+## Details About The Workflow And Modifications (Example of getreadcount() system call creation , getsyscallcount() and reset feature in similar way)
+## Mostly following the course video material
+
+### 1. Added user-level system call interface
+File modified:
+
+```text
+user.h
+```
+```c
+int getreadcount(int reset);
+int getsyscallcount(int syscall_number, int reset);
+```
+
+### 2. Added user stub
+
+File modified:
+```text
+usys.S
+```
+
+Added:
+
+```c
 SYSCALL(getreadcount)
-2.	In user.h (where those syscall declaration or definition (in C term) are located)), Added new definition
-int getreadcount(void)
-3.	Next is to go to syscall.h since usys.S include that header file and we need to specify system call number for returning system call number back to syscall() in syscall.c
+SYSCALL(getsyscallcount)
+```
 
+### 3. new sys call number
+
+File modified:
+
+```text
+syscall.h
+```
+```c
 #define SYS_getreadcount 22
 
-
-4.	After that we can also add our new routine to the syscall table in syscall.c
-
+```
+### 4. Registered system call in syscall.c
+File modified:
+```text
+syscall.c
+```
+Added:
+```c
 extern int sys_getreadcount(void);
+extern int sys_getsyscallcount(void);
+```
+and registered them in the syscall table:
+```c
 [SYS_getreadcount] sys_getreadcount,
+[SYS_getsyscallcount] sys_getsyscallcount,
+```
+### 5. Global counter variable
+File modified:
 
-
- 
-5.	After that we implement our sys_getreadcount procedure implementation in sysproc.c
-As well as modifying sys_read() function to count read() calls in sysfile.c
-
-In sysfile.c added:
-
-uint readcount = 0;
-
-readcount++;//before returning
-
-in sysproc.c
-
+```text
+sysfile.c
+```
+Added:
+```c
+int readcount = 0;
+```
+The counter is incremented whenever `sys_read()` successfully executes.
+### 6. Implemented getreadcount()
+File modified:
+```text
+sysproc.c
+```
+Added:
+```c
 extern int readcount;
-
- int sys_getreadcount(void) 
-{ 
-return readcount; 
+```
+and implemented:
+```c
+int
+sys_getreadcount(void)
+{
+    ...
 }
-6.	
+```
+This system call returns the current read counter and optionally resets it depending on the reset flag.
+### Additional Modifications
+Created a custom user program:
 
-And so on but repeating step 1-6 for additional features, for example: 
+```text
+read_count_test.c
+```
+* Added the test program to `UPROGS` in Makefile
+```make
+UPROGS += _read_count_test
+```
 
-in user.h updated sys call interface
-
-int getreadcount(int reset)
-
-int getsyscallcount(int sys_call_num, int reset)	
-
-in usys.S added new SYSCALL name SYSCALL(getsyscallcount)
-
-in sysproc.c reset logic is implemented + syscall counter procedure Extern int syscall_count[] etc...
-
-## Other additional notes
-There are some minor modifications related to the xv6 set-up suggestion by the course book such as set CPU:=1 and something else related to the qemu emulator not creating a new window in Makefile
-Also an important one is to add my own program to Makefile User program build instruction
-U_PROGS:= read_count_test\
+* Some Makefile instruction suggested by the background material such as set CPU:=1 and something related to qemu not opening new window when created + shorter make qemu command
 
 
