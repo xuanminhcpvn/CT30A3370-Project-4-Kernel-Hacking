@@ -3,7 +3,6 @@
 ## Introduction
 
 This project implements two new system calls in the xv6 operating system that track and return the number of system calls:
-
 * **getreadcount(int reset)**
 * **getsyscallcount(int syscall_number, int reset)**
 
@@ -11,6 +10,20 @@ The **getreadcount()** system call tracks only `read()` system calls. The **gets
 
 Both system calls support a reset flag. When `reset = 1`, the current counter value is returned and the corresponding counter is reset to zero. When `reset = 0`, the current value is returned without modifying the counter.
 
+## Point proposal 
+-Everything submitted compiles and works at least on some level. (Required, 2 points)
+
+
+-The documentation is appropriate, correct and the repository is available (Required, 0 points)
+
+-The documentation is detailed, and the provided source code is reasonably well commented. (1 point)
+
+
+-You can reset the counter with an argument (1 point)
+
+-You can select between the number of different system call which to follow (1 point)
+
+**TOTAL: = 5**
 ## Installation Instructions
 
 ### Requirements
