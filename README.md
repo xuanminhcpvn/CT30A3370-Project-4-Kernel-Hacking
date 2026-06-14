@@ -1,5 +1,11 @@
 ### Declaration of AI (AI was used to turn my notes during development phase) to .md format. Tool used: ChatGPT
 # CT30A3370-Project-4-Kernel-Hacking
+
+## License and Attribution
+
+This project is based on **xv6**, an educational operating system originally developed at MIT.  
+xv6 is distributed under an MIT-style license, and this repository preserves the original copyright and permission notices as required.
+
 ## Introduction
 
 This project implements two new system calls in the xv6 operating system that track and return the number of system calls:
